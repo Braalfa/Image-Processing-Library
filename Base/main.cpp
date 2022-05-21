@@ -10,7 +10,8 @@ int findMedian(int array[], int size){
     return array[size/2];
 }
 
-void medianFilter(Mat image){
+Mat medianFilter(Mat* imagePtr){
+    Mat image = *imagePtr;
     int windowSize = 9;
     int window[windowSize];    
     Mat filteredImage = image.clone();
@@ -34,8 +35,33 @@ void medianFilter(Mat image){
             filteredImage.at<Vec3b>(i, j) = newPixel;
         }
     }
-    imwrite("medianFilterOutput.jpg", filteredImage);
+    return filteredImage;
 }
+
+// Mat convolution2D(Mat A, Mat B){
+
+//     int m1 = A.rows;
+//     int n1 = A.cols;
+
+//     int m2 = B.rows;
+//     int n2 = B.cols;
+
+//     int nRows = m1+m2-1;
+//     int nCols = n1+n2-1;
+
+//     Mat C = Mat::zeros(nRows, nCols, CV_64F);
+
+//     for(int j = 0; j < nRows; j++){
+//         for(int k = 0; k < nCols; k++){
+//             for(int p = max(0, j-m2+1); p < min(j+1, m1); p++){
+//                 for(int q = max(0, k-n2+1); q < min(k+1, n1); q++){
+//                      C.at<double>(j,k)=C.at<double>(j,k)+A.at<double>(p,q)*B.at<double>(j-p,k-q);
+//                 }
+//             }
+//         }
+//     }
+//     return C;
+// }
 
 Mat convolution2D(Mat A, Mat B){
 
@@ -45,22 +71,23 @@ Mat convolution2D(Mat A, Mat B){
     int m2 = B.rows;
     int n2 = B.cols;
 
-    int nRows = m1+m2-1;
-    int nCols = n1+n2-1;
+    int nRows = m1;
+    int nCols = n1;
 
     Mat C = Mat::zeros(nRows, nCols, CV_64F);
-
+    // Convolution
     for(int j = 0; j < nRows; j++){
         for(int k = 0; k < nCols; k++){
             for(int p = max(0, j-m2+1); p < min(j+1, m1); p++){
                 for(int q = max(0, k-n2+1); q < min(k+1, n1); q++){
-                     C.at<double>(j,k)=C.at<double>(j,k)+A.at<double>(p,q)*B.at<double>(j-p,k-q);
+                     C.at<double>(j+m2/2-1,k+n2/2-1)=C.at<double>(j+m2/2-1,k+n2/2-1)+A.at<double>(p,q)*B.at<double>(j-p,k-q);
                 }
             }
         }
-    }
+    }    
     return C;
 }
+
 
 void printMat(Mat mat){
     for(int j = 0; j < mat.rows; j++){
@@ -71,9 +98,8 @@ void printMat(Mat mat){
     }
 }
 
-void averageFilter(Mat image, int iterations){
-
-    image.convertTo(image, CV_64F);
+Mat averageFilter(Mat* imagePtr, int iterations){
+    Mat image = *imagePtr;
     vector<Mat> channels(3);
     split(image, channels);
     int k = 3;
@@ -83,9 +109,34 @@ void averageFilter(Mat image, int iterations){
         channels[1] = convolution2D(channels[1], matB);
         channels[2] = convolution2D(channels[2], matB);
     }
-    cv::Mat final = cv::Mat(channels[0].rows, channels[0].cols, CV_64F);
-    merge(channels, final);
-    imwrite("averageConvolutionalFilterOutput.jpg", final);
+    cv::Mat filteredImage = cv::Mat(channels[0].rows, channels[0].cols, CV_64F);
+    merge(channels, filteredImage);
+    return filteredImage;
+}
+
+Mat laplacianFilter(Mat* imagePtr){
+    Mat image = *imagePtr;
+    double B[3][3] = {{1, 1,1}, {1,-8,1}, {1, 1,1}};
+    Mat matB(3, 3, CV_64F, B);
+    Mat matC = convolution2D(image,matB);
+    return matC;
+}
+
+Mat bordersEnhancementFilter(Mat* imagePtr){
+    Mat image = *imagePtr;
+    Mat matB = laplacianFilter(imagePtr);
+
+    double alpha=-0.5;
+    Mat matC(image.rows, image.cols, CV_64F, 0.0);
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            matC.at<double>(i, j) = image.at<double>(i, j) +  matB.at<double>(i, j)*alpha;
+        }
+    }
+
+    return matC;
 }
 
 int findMaxInMatRange(Mat mat, int xmin, int xmax, int ymin, int ymax){
@@ -170,6 +221,7 @@ Mat topHat(Mat* imagePtr){
             out.at<double>(i, j) = image.at<double>(i, j) - out.at<double>(i, j);
         }
     }
+    imwrite("top.jpg", out);
     return out;
 }
 
@@ -186,7 +238,7 @@ Mat bottomHat(Mat* imagePtr){
     return out;
 }
 
-void contrastEnhancementFilter(Mat* imagePtr){
+Mat contrastEnhancementFilter(Mat* imagePtr){
     Mat image = *imagePtr;
     Mat topHatImage = topHat(imagePtr);
     Mat bottomHatImage = bottomHat(imagePtr);
@@ -198,7 +250,7 @@ void contrastEnhancementFilter(Mat* imagePtr){
             out.at<double>(i, j) = image.at<double>(i, j) +  topHatImage.at<double>(i, j) - bottomHatImage.at<double>(i, j);
         }
     }
-    imwrite("contrastImprovement.jpg", out);
+    return out;
 }
 
 int main(int argc, char** argv)
@@ -206,8 +258,11 @@ int main(int argc, char** argv)
     //Mat image = imread("barbara.jpg",
     //                    IMREAD_COLOR);
 
-    Mat image = imread("imagen11.jpg",
-                      IMREAD_GRAYSCALE);
+    // Mat image = imread("imagen11.jpg",
+    //                   IMREAD_GRAYSCALE);
+
+    Mat image = imread("Columnas.jpg",
+                   IMREAD_GRAYSCALE);
 
 
     if (image.empty()) {
@@ -216,12 +271,14 @@ int main(int argc, char** argv)
         cin.get();
         return -1;
     }
-
     image.convertTo(image, CV_64F);
 
     Mat* ptr = &image;
-    contrastEnhancementFilter(ptr);
-    //medianFilter(image);
-    //averageFilter(image, 100);    
+    //contrastEnhancementFilter(ptr);
+    //image.convertTo(image, CV_8U);
+    //Mat out = medianFilter(ptr);
+    //Mat out =averageFilter(ptr, 1); 
+    Mat out = bordersEnhancementFilter(ptr);   
+    imwrite("output.jpg", out);
     return 0;
 }
