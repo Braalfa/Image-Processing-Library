@@ -8,20 +8,27 @@ Mat convolution2D(Mat A, Mat B){
     int m2 = B.rows;
     int n2 = B.cols;
 
-    int nRows = m1;
-    int nCols = n1;
+    int nRows = m1+m2-1;
+    int nCols = n1+n2-1;
 
     Mat C = Mat::zeros(nRows, nCols, CV_64F);
     for(int j = 0; j < nRows; j++){
         for(int k = 0; k < nCols; k++){
             for(int p = max(0, j-m2+1); p < min(j+1, m1); p++){
                 for(int q = max(0, k-n2+1); q < min(k+1, n1); q++){
-                     C.at<double>(j+m2/2-1,k+n2/2-1)=C.at<double>(j+m2/2-1,k+n2/2-1)+A.at<double>(p,q)*B.at<double>(j-p,k-q);
+                     C.at<double>(j,k)=C.at<double>(j,k)+A.at<double>(p,q)*B.at<double>(j-p,k-q);
                 }
             }
         }
+    }
+
+    Mat D = Mat::zeros(m1, n1, CV_64F);
+    for(int j = 0; j < m1; j++){
+        for(int k = 0; k < n1; k++){
+            D.at<double>(j,k)=C.at<double>(j+m2/2,k+n2/2);
+        }
     }    
-    return C;
+    return D;
 }
 
 
