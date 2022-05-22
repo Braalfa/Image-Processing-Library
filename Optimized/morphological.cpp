@@ -82,7 +82,6 @@ Mat topHatFilter(Mat* imagePtr){
             out.at<double>(i, j) = image.at<double>(i, j) - out.at<double>(i, j);
         }
     }
-    imwrite("top.jpg", out);
     return out;
 }
 
