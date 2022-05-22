@@ -10,9 +10,9 @@ Mat medianFilter(Mat* imagePtr){
     int windowSize = 9;
     int window[windowSize];    
     Mat filteredImage = image.clone();
-    for(int i = 0; i < image.rows; i++)
+    for(int i = 1; i < image.rows-1; i++)
     {
-        for(int j = 0; j < image.cols; j++)
+        for(int j = 1; j < image.cols-1; j++)
         {
             Vec3b newPixel;
             for(int k = 0; k < 3; k++){

@@ -1,0 +1,1 @@
+g++ optimized-main.cpp Optimized/traditional.cpp Optimized/morphological.cpp Optimized/convolutional.cpp  -o optimized-main -fopenmp `pkg-config --cflags --libs opencv4`
