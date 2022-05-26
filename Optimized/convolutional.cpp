@@ -13,16 +13,28 @@ Mat convolution2D(Mat A, Mat B){
     int nCols = n1+n2-1;
 
     Mat C = Mat::zeros(nRows, nCols, CV_64F);
-    for(int j = 0; j < nRows; j++){
-        for(int k = 0; k < nCols; k++){
-            for(int p = max(0, j-m2+1); p < min(j+1, m1); p++){
-                for(int q = max(0, k-n2+1); q < min(k+1, n1); q++){
-                     C.at<double>(j,k)=C.at<double>(j,k)+A.at<double>(p,q)*B.at<double>(j-p,k-q);
+    #pragma omp parallel
+    {
+        Mat C_Private = Mat::zeros(nRows, nCols, CV_64F);
+        #pragma omp for collapse(2)
+        for(int j = 0; j < nRows; j++){
+            for(int k = 0; k < nCols; k++){
+                for(int p = max(0, j-m2+1); p < min(j+1, m1); p++){
+                    for(int q = max(0, k-n2+1); q < min(k+1, n1); q++){
+                        C_Private.at<double>(j,k)=C_Private.at<double>(j,k)+A.at<double>(p,q)*B.at<double>(j-p,k-q);
+                    }
                 }
             }
         }
+        #pragma omp critical
+        {
+            for(int j = 0; j < nRows; j++){
+                for(int k = 0; k < nCols; k++){
+                    C.at<double>(j,k)+=C_Private.at<double>(j,k);
+                }
+            }    
+        }
     }
-
     Mat D = Mat::zeros(m1, n1, CV_64F);
     #pragma omp parallel for collapse(2)
     for(int j = 0; j < m1; j++){
