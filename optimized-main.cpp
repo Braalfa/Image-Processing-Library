@@ -1,12 +1,14 @@
 #include "Optimized/optimizedFilters.hpp"
 #include <ctime>
 #include <iostream>
+#include <omp.h>
 
 int main(int argc, char** argv)
 {
     Mat image;
     Mat* ptr;
     Mat out;
+    omp_set_num_threads(omp_get_num_procs());
 
 
     //======================== MEDIAN TEST ========================

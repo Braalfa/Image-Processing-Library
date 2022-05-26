@@ -1,5 +1,4 @@
 #include "optimizedFilters.hpp"
-#include <omp.h>
 
 int findMedian(int array[], int size){
     std::sort(array,array+size);
@@ -11,7 +10,6 @@ Mat medianFilter(Mat* imagePtr){
     int windowSize = 9;
     int window[windowSize];    
     Mat filteredImage = image.clone();
-    omp_set_num_threads(omp_get_num_procs());
     #pragma omp parallel  
 	{
         #pragma omp for private(window) collapse(2)
