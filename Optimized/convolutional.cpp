@@ -1,4 +1,5 @@
 #include "optimizedFilters.hpp"
+#include <iostream>
 
 Mat convolution2D(Mat A, Mat B){
 
@@ -23,6 +24,7 @@ Mat convolution2D(Mat A, Mat B){
     }
 
     Mat D = Mat::zeros(m1, n1, CV_64F);
+    #pragma omp parallel for collapse(2)
     for(int j = 0; j < m1; j++){
         for(int k = 0; k < n1; k++){
             D.at<double>(j,k)=C.at<double>(j+m2/2,k+n2/2);
@@ -38,10 +40,12 @@ Mat averageFilter(Mat* imagePtr, int iterations){
     split(image, channels);
     int k = 3;
     cv::Mat matB(k, k, CV_64F, 1/(pow(k,2)));
+    
     for(int i = 0; i< iterations; i++){
-        channels[0] = convolution2D(channels[0], matB);
-        channels[1] = convolution2D(channels[1], matB);
-        channels[2] = convolution2D(channels[2], matB);
+        #pragma omp parallel for
+        for(int j=0; j<3; j++){
+            channels[j] = convolution2D(channels[j], matB);
+        }
     }
     cv::Mat filteredImage = cv::Mat(channels[0].rows, channels[0].cols, CV_64F);
     merge(channels, filteredImage);
@@ -62,6 +66,7 @@ Mat bordersEnhancementFilter(Mat* imagePtr){
 
     double alpha=-0.5;
     Mat matC(image.rows, image.cols, CV_64F, 0.0);
+    #pragma omp for collapse(2)
     for(int i = 0; i < image.rows; i++)
     {
         for(int j = 0; j < image.cols; j++)
