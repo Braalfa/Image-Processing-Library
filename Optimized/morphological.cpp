@@ -2,6 +2,7 @@
 
 int findMaxInMatRange(Mat mat, int xmin, int xmax, int ymin, int ymax){
     double max = -INFINITY;
+    #pragma omp parallel for collapse(2) reduction(max : max)
     for(int x=xmin; x<xmax;x++){
         for(int y=ymin; y<ymax;y++){
             if (mat.at<double>(x,y) > max){
@@ -14,6 +15,7 @@ int findMaxInMatRange(Mat mat, int xmin, int xmax, int ymin, int ymax){
 
 int findMinInMatRange(Mat mat, int xmin, int xmax, int ymin, int ymax){
     double min = INFINITY;
+    #pragma omp parallel for collapse(2) reduction(min : min)
     for(int x=xmin; x<xmax;x++){
         for(int y=ymin; y<ymax;y++){
             if (mat.at<double>(x,y) < min){
@@ -75,6 +77,7 @@ Mat clausure(Mat* imagePtr){
 Mat topHatFilter(Mat* imagePtr){
     Mat image = *imagePtr;
     Mat out = open(imagePtr);
+    #pragma omp parallel for collapse(2)
     for(int i = 0; i <image.rows; i++)
     {
         for(int j = 0; j < image.cols; j++)
@@ -88,6 +91,7 @@ Mat topHatFilter(Mat* imagePtr){
 Mat bottomHatFilter(Mat* imagePtr){
     Mat image = *imagePtr;
     Mat out = clausure(imagePtr);
+    #pragma omp parallel for collapse(2)
     for(int i = 0; i < image.rows; i++)
     {
         for(int j = 0; j < image.cols; j++)
@@ -103,6 +107,7 @@ Mat contrastEnhancementFilter(Mat* imagePtr){
     Mat topHatImage = topHatFilter(imagePtr);
     Mat bottomHatImage = bottomHatFilter(imagePtr);
     cv::Mat out(image.rows, image.cols, CV_64F, 0.0);
+    #pragma omp parallel for collapse(2)
     for(int i = 0; i < image.rows; i++)
     {
         for(int j = 0; j < image.cols; j++)

@@ -1,0 +1,2 @@
+time ./optimized-main;time ./optimized-main;time ./optimized-main;time ./optimized-main;time ./optimized-main
+time ./base-main;time ./base-main;time ./base-main;time ./base-main;time ./base-main

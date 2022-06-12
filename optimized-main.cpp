@@ -41,7 +41,10 @@ int main(int argc, char** argv)
     // image.convertTo(image, CV_64F);
     // ptr = &image;
 
-    // out = bordersEnhancementFilter(ptr);   
+    
+    // for(int i = 0; i<200; i++){
+    //     out = bordersEnhancementFilter(ptr);   
+    // }    
     // imwrite("OutputImages/borderEnhancement.jpg", out);
 
     //=============================================================
