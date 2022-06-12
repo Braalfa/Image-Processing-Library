@@ -1,29 +1,27 @@
 #include "optimizedFilters.hpp"
 
 int findMaxInMatRange(Mat mat, int xmin, int xmax, int ymin, int ymax){
-    double max = -INFINITY;
-    #pragma omp parallel for collapse(2) reduction(max : max)
+    double maxval = -INFINITY;
     for(int x=xmin; x<xmax;x++){
         for(int y=ymin; y<ymax;y++){
-            if (mat.at<double>(x,y) > max){
-                max = mat.at<double>(x,y);
+            if (mat.at<double>(x,y) > maxval){
+                maxval = mat.at<double>(x,y);
             }
         }
     }
-    return max;
+    return maxval;
 }
 
 int findMinInMatRange(Mat mat, int xmin, int xmax, int ymin, int ymax){
-    double min = INFINITY;
-    #pragma omp parallel for collapse(2) reduction(min : min)
+    double minval = INFINITY;
     for(int x=xmin; x<xmax;x++){
         for(int y=ymin; y<ymax;y++){
-            if (mat.at<double>(x,y) < min){
-                min = mat.at<double>(x,y);
+            if (mat.at<double>(x,y) < minval){
+                minval = mat.at<double>(x,y);
             }
         }
     }
-    return min;
+    return minval;
 }
 
 Mat dilatation(Mat* imagePtr){
@@ -31,7 +29,7 @@ Mat dilatation(Mat* imagePtr){
     int m = image.rows;
     int n = image.cols;
     cv::Mat out(m, n, CV_64F, 0.0);
-
+    #pragma omp parallel for
     for(int x=0; x<m; x++){
         int xmin = max(x-1,0);
         int xmax = min(x+2,m);
@@ -49,7 +47,7 @@ Mat erotion(Mat* imagePtr){
     int m = image.rows;
     int n = image.cols;
     cv::Mat out(m, n, CV_64F, 0.0);
-
+    #pragma omp parallel for
     for(int x=0; x<m; x++){
         int xmin = max(x-1,0);
         int xmax = min(x+2,m);

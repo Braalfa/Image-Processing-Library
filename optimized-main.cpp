@@ -56,7 +56,10 @@ int main(int argc, char** argv)
     image.convertTo(image, CV_64F);
     ptr = &image;
 
-    out = contrastEnhancementFilter(ptr);
+    for(int i = 0; i<50; i++){
+        out = contrastEnhancementFilter(ptr);
+    }    
+
     imwrite("OutputImages/contrastEnhancement.jpg", out);
 
     //=============================================================
